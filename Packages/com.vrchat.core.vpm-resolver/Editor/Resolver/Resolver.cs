@@ -1,9 +1,9 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using Serilog;
 using Serilog.Sinks.Unity3D;
 using UnityEditor;
@@ -48,7 +48,9 @@ namespace VRC.PackageManagement.Resolver
             SetupLogging();
             if (!SessionState.GetBool(_projectLoadedKey, false))
             {
-                EditorCoroutine.Start(CheckResolveNeeded());
+#pragma warning disable 4014
+                CheckResolveNeeded();
+#pragma warning restore 4014
             }
         }
 
@@ -62,14 +64,14 @@ namespace VRC.PackageManagement.Resolver
             );
         }
 
-        private static IEnumerator CheckResolveNeeded()
+        private static async Task CheckResolveNeeded()
         {
             SessionState.SetBool(_projectLoadedKey, true);
             
             //Wait for project to finish compiling
             while (EditorApplication.isCompiling || EditorApplication.isUpdating)
             {
-                yield return null;
+                await Task.Delay(250);
             }
 
             try
@@ -77,7 +79,7 @@ namespace VRC.PackageManagement.Resolver
 
                 if (string.IsNullOrWhiteSpace(ProjectDir))
                 {
-                    yield break;
+                    return;
                 }
                 
                 if (VPMProjectManifest.ResolveIsNeeded(ProjectDir))
