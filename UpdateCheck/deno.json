@@ -1,0 +1,28 @@
+{
+  "fmt": {
+    "files": {
+      "include": [],
+      "exclude": []
+    },
+    "options": {}
+  },
+  "lint": {
+    "files": {
+      "include": [],
+      "exclude": []
+    },
+    "rules": {
+      "tags": [],
+      "include": [],
+      "exclude": []
+    }
+  },
+  "tasks": {},
+  "test": {
+    "files": {
+      "include": [],
+      "exclude": []
+    }
+  },
+  "compilerOptions": {}
+}
