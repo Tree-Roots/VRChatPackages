@@ -11,7 +11,7 @@
 | VRChat SDK - Base            | 3.1.10  | https://github.com/Tree-Roots/VRChatPackages.git?path=/Packages/com.vrchat.base#3.1.10              |
 | VRChat SDK - Worlds          | 3.1.10  | https://github.com/Tree-Roots/VRChatPackages.git?path=/Packages/com.vrchat.worlds#3.1.10            |
 | VRChat SDK - Avatars         | 3.1.10  | https://github.com/Tree-Roots/VRChatPackages.git?path=/Packages/com.vrchat.avatars#3.1.10           |
-| VRChat Package Resolver Tool | 0.1.17 | https://github.com/Tree-Roots/VRChatPackages.git?path=/Packages/com.vrchat.core.vpm-resolver#3.1.10 |
+| VRChat Package Resolver Tool | moved | move to https://github.com/Tree-Roots/VPRTPackage |
 
 #### 安装 Worlds SDK
 
