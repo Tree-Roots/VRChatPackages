@@ -72,6 +72,8 @@ import {
       // 读取 ../README.md ，替换版本号 versionTxt 为 baseVersion
       const readme = await Deno.readTextFile("../README.md")
       await Deno.writeTextFile("../README.md", readme.replaceAll(versionTxt, baseVersion))
+      const readmez = await Deno.readTextFile("../README_zh.md")
+      await Deno.writeTextFile("../README_zh.md", readmez.replaceAll(versionTxt, resolverVersion))
     }
   }
 })()
