@@ -2,6 +2,7 @@
 name: Update VRChat SDK from VCC
 
 on:
+  workflow_dispatch:
   schedule:
     - cron: '0 8 * * *'
 
