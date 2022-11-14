@@ -10,7 +10,7 @@ import {
   const json: VRCOfficial = await res.json()
   // 读取 com.vrchat.base 的版本号，位于 packages → com.vrchat.base → versions → x.x.x ，其中 x.x.x 为版本号，取最新的版本
   // Object.keys 选最后一个，即最新的版本
-  const baseVersionKeys = Object.keys(json.packages["com.vrchat.base"].versions)
+  const baseVersionKeys = Object.keys(json.packages["com.vrchat.base"].versions).sort()
   let baseVersion = baseVersionKeys.pop() ?? ""
   if (baseVersion === "") {
     console.error("can't find base version")
