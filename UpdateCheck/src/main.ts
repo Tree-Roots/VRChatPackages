@@ -10,7 +10,8 @@ import {
   const json: VRCOfficial = await res.json()
   // 读取 com.vrchat.base 的版本号，位于 packages → com.vrchat.base → versions → x.x.x ，其中 x.x.x 为版本号，取最新的版本
   // Object.keys 选最后一个，即最新的版本
-  const baseVersionKeys = Object.keys(json.packages["com.vrchat.base"].versions).sort()
+  let baseVersionKeys = Object.keys(json.packages["com.vrchat.base"].versions)
+  baseVersionKeys = (f=>f(f(baseVersionKeys,1).sort(),-1)) ((baseVersionKeys,v)=>baseVersionKeys.map(a=>a.replace(/\d+/g,n=>+n+v*100000)))
   let baseVersion = baseVersionKeys.pop() ?? ""
   if (baseVersion === "") {
     console.error("can't find base version")
@@ -73,7 +74,7 @@ import {
       const readme = await Deno.readTextFile("../README.md")
       await Deno.writeTextFile("../README.md", readme.replaceAll(versionTxt, baseVersion))
       const readmez = await Deno.readTextFile("../README_zh.md")
-      await Deno.writeTextFile("../README_zh.md", readmez.replaceAll(versionTxt, resolverVersion))
+      await Deno.writeTextFile("../README_zh.md", readmez.replaceAll(versionTxt, baseVersion))
     }
   }
 })()
