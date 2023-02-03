@@ -1,0 +1,51 @@
+# 当创建新 tag 时时，触发发布流程
+# 循环推送 com.vrchat.base com.vrchat.avatars com.vrchat.worlds 到 UPM
+name: Publish VRChat SDK to UPM
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "*"
+
+jobs:
+  publish:
+    name: Publish-VRC-SDK-UPM
+    runs-on: ubuntu-latest
+    steps:
+      # 加载仓库
+      - name: Checkout
+        uses: actions/checkout@v3
+      # npm 安装
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      # npm 登录
+      - name: Publish base to UPM
+        run: |
+          mv Packages/com.vrchat.base ../com.vrchat.base
+          cd ../com.vrchat.base
+          npm set registry https://upm-packages.dev
+          echo "//upm-packages.dev/:_authToken=\${NODE_AUTH_TOKEN}" > .npmrc
+          npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.UPM_TOKEN }}
+      - name: Publish avatars to UPM
+        run: |
+          mv Packages/com.vrchat.avatars ../com.vrchat.avatars
+          cd ../com.vrchat.avatars
+          npm set registry https://upm-packages.dev
+          echo "//upm-packages.dev/:_authToken=\${NODE_AUTH_TOKEN}" > .npmrc
+          npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.UPM_TOKEN }}
+      - name: Publish worlds to UPM
+        run: |
+          mv Packages/com.vrchat.worlds ../com.vrchat.worlds
+          cd ../com.vrchat.worlds
+          npm set registry https://upm-packages.dev
+          echo "//upm-packages.dev/:_authToken=\${NODE_AUTH_TOKEN}" > .npmrc
+          npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.UPM_TOKEN }}
