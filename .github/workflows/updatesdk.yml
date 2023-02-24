@@ -44,3 +44,12 @@ jobs:
           git commit -m "Update VRChat SDK to ${{ steps.updated_version.outputs.version }}"
           git tag -a ${{ steps.updated_version.outputs.version }} -m "Update VRChat SDK to ${{ steps.updated_version.outputs.version }}"
           git push --follow-tags
+      # 比较版本，如果不一样则运行 publishupm.yml
+      - name: Trigger publishupm.yml
+        if: steps.current_version.outputs.version != steps.updated_version.outputs.version
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          # token: ${{ secrets.GITHUB_TOKEN }}
+          # repository: ${{ github.repository }}
+          event-type: publishupm
+          client-payload: '{"version": "${{ steps.updated_version.outputs.version }}"}'
