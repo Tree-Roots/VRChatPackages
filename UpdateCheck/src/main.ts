@@ -10,7 +10,15 @@ import {
   const json: VRCOfficial = await res.json()
   // 读取 com.vrchat.base 的版本号，位于 packages → com.vrchat.base → versions → x.x.x ，其中 x.x.x 为版本号，取最新的版本
   // Object.keys 选最后一个，即最新的版本
-  const downloadList: ["com.vrchat.base", "com.vrchat.worlds", "com.vrchat.avatars"] = ["com.vrchat.base", "com.vrchat.worlds", "com.vrchat.avatars"]
+  const downloadList: [
+    "com.vrchat.base",
+    "com.vrchat.worlds",
+    "com.vrchat.avatars"
+  ] = [
+      "com.vrchat.base",
+      "com.vrchat.worlds",
+      "com.vrchat.avatars"
+    ]
   let hascopy = false
   for (const packageName of downloadList) {
     let baseVersionKeys = Object.keys(json.packages[packageName].versions)
