@@ -18,23 +18,23 @@ jobs:
         uses: denoland/setup-deno@v1
         with:
           deno-version: v1.x
-      # 从 UpdateCheck/version.txt 读取当前版本到变量
+      # 从 UpdateCheck/com.vrchat.base_version.txt 读取当前版本到变量
       - name: Get current version
         id: current_version
-        # run: echo "::set-output name=version::$(cat UpdateCheck/version.txt)"
+        # run: echo "::set-output name=version::$(cat UpdateCheck/com.vrchat.base_version.txt)"
         # The `set-output` command is deprecated and will be disabled soon. Please upgrade to using Environment Files.
-        run: echo "version=$(cat UpdateCheck/version.txt)" >> $GITHUB_OUTPUT
+        run: echo "version=$(cat UpdateCheck/com.vrchat.base_version.txt)" >> $GITHUB_OUTPUT
       # 运行仓库里 UpdateCheck 文件夹下的 src/main.ts
       - name: Update VRChat SDK
         run: |
           cd UpdateCheck
           deno run --allow-read --allow-write --allow-net --allow-env --allow-run --unstable src/main.ts
-      # 从 UpdateCheck/version.txt 读取更新后的版本到变量进行比较
+      # 从 UpdateCheck/com.vrchat.base_version.txt 读取更新后的版本到变量进行比较
       - name: Get updated version
         id: updated_version
-        # run: echo "::set-output name=version::$(cat UpdateCheck/version.txt)"
+        # run: echo "::set-output name=version::$(cat UpdateCheck/com.vrchat.base_version.txt)"
         # The `set-output` command is deprecated and will be disabled soon. Please upgrade to using Environment Files.
-        run: echo "version=$(cat UpdateCheck/version.txt)" >> $GITHUB_OUTPUT
+        run: echo "version=$(cat UpdateCheck/com.vrchat.base_version.txt)" >> $GITHUB_OUTPUT
       # 比较版本，如果不一样则提交
       - name: Commit changes
         if: steps.current_version.outputs.version != steps.updated_version.outputs.version
