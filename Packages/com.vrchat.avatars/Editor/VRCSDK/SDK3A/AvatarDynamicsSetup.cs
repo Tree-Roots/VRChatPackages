@@ -68,8 +68,10 @@ namespace VRC.SDK3.Avatars
                     if (animator != null)
                     {
                         physBone.param_IsGrabbed = new AnimParameterAccessAvatarSDK(animator, physBone.parameter + VRCPhysBoneBase.PARAM_ISGRABBED);
+                        physBone.param_IsPosed = new AnimParameterAccessAvatarSDK(animator, physBone.parameter + VRCPhysBoneBase.PARAM_ISPOSED);
                         physBone.param_Angle = new AnimParameterAccessAvatarSDK(animator, physBone.parameter + VRCPhysBoneBase.PARAM_ANGLE);
                         physBone.param_Stretch = new AnimParameterAccessAvatarSDK(animator, physBone.parameter + VRCPhysBoneBase.PARAM_STRETCH);
+                        physBone.param_Squish = new AnimParameterAccessAvatarSDK(animator, physBone.parameter + VRCPhysBoneBase.PARAM_SQUISH);
                     }
                 }
             }
