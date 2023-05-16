@@ -6,7 +6,7 @@ import {
 } from "https://deno.land/x/zip@v1.2.3/mod.ts";
 (async () => {
   // 格式：11/7/2022 5:00:52 AM
-  const res = await fetch(`https://vpm.directus.app/assets/936917f9-c2d4-4470-a5bc-9bb38176fa01?download&cache=${new Date().toLocaleString()}`);
+  const res = await fetch(`https://vrchat.github.io/packages/index.json?download&cache=${new Date().toLocaleString()}`);
   const json: VRCOfficial = await res.json()
   // 读取 com.vrchat.base 的版本号，位于 packages → com.vrchat.base → versions → x.x.x ，其中 x.x.x 为版本号，取最新的版本
   // Object.keys 选最后一个，即最新的版本
