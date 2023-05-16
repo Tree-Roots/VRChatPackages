@@ -65,9 +65,9 @@ import {
       await Deno.remove("VRChat", { recursive: true })
       // 读取 ../README.md ，替换版本号 versionTxt 为 baseVersion
       const readme = hascopy ? await Deno.readTextFile("../README.md") : await Deno.readTextFile("rt.md")
-      await Deno.writeTextFile("../README.md", readme.replaceAll(`__packageName__`, `${baseVersion}`))
+      await Deno.writeTextFile("../README.md", readme.replaceAll(`__${packageName}__`, `${baseVersion}`))
       const readmez = hascopy ? await Deno.readTextFile("../README_zh.md") : await Deno.readTextFile("rtzh.md")
-      await Deno.writeTextFile("../README_zh.md", readmez.replaceAll(`__packageName__`, `${baseVersion}`))
+      await Deno.writeTextFile("../README_zh.md", readmez.replaceAll(`__${packageName}__`, `${baseVersion}`))
       hascopy = true
     }
   }
