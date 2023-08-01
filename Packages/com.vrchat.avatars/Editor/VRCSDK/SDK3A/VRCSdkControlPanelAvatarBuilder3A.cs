@@ -17,6 +17,7 @@ using VRC.SDKBase.Validation.Performance;
 using VRC.SDKBase.Validation.Performance.Stats;
 using VRCStation = VRC.SDK3.Avatars.Components.VRCStation;
 using VRC.SDK3.Validation;
+using VRC.SDKBase.Editor.V3;
 
 [assembly: VRCSdkControlPanelBuilder(typeof(VRCSdkControlPanelAvatarBuilder3A))]
 
@@ -611,6 +612,37 @@ namespace VRC.SDK3.Editor
             EditorGUILayout.EndVertical();
 
             GUI.enabled = true;
+            
+            void OnV3Export()
+            {
+                bool buildBlocked = !VRCBuildPipelineCallbacks.OnVRCSDKBuildRequested(VRCSDKRequestedBuildType.Avatar);
+                if (!buildBlocked)
+                {
+                    if (Core.APIUser.CurrentUser.canPublishAvatars)
+                    {
+                        EnvConfig.FogSettings originalFogSettings = EnvConfig.GetFogSettings();
+                        EnvConfig.SetFogSettings(
+                            new EnvConfig.FogSettings(EnvConfig.FogSettings.FogStrippingMode.Custom, true, true, true));
+
+#if UNITY_ANDROID
+                        EditorPrefs.SetBool("VRC.SDKBase_StripAllShaders", true);
+#else
+                        EditorPrefs.SetBool("VRC.SDKBase_StripAllShaders", false);
+#endif
+
+                        VRC_SdkBuilder.shouldBuildUnityPackage = false;
+                        VRC_SdkBuilder.ExportAvatarToV3(avatar.gameObject);
+
+                        EnvConfig.SetFogSettings(originalFogSettings);
+                    }
+                    else
+                    {
+                        VRCSdkControlPanel.ShowContentPublishPermissionsDialog();
+                    }
+                }
+            }
+            
+            V3SdkUI.DrawV3UI(() => _builder.NoGuiErrorsOrIssues(), OnV3Export, VRCSdkControlPanel.boxGuiStyle, VRCSdkControlPanel.infoGuiStyle, VRCSdkControlPanel.SdkWindowWidth);
         }
     }
 }

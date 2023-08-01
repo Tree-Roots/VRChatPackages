@@ -10,6 +10,7 @@ using VRC.Editor;
 using VRC.SDK3.Editor;
 using VRC.SDKBase.Editor;
 using VRC.SDKBase.Editor.BuildPipeline;
+using VRC.SDKBase.Editor.V3;
 using VRC.Udon;
 using VRC.Udon.Common.Interfaces;
 using Object = UnityEngine.Object;
@@ -259,6 +260,31 @@ namespace VRC.SDK3.Editor
             }
 
             GUILayout.EndVertical();
+            GUI.enabled = true;
+
+            void OnV3Export()
+            {
+                bool uploadBlocked = !VRCBuildPipelineCallbacks.OnVRCSDKBuildRequested(VRCSDKRequestedBuildType.Scene);
+                if (!uploadBlocked)
+                {
+                    if (Core.APIUser.CurrentUser.canPublishWorlds)
+                    {
+                        EnvConfig.ConfigurePlayerSettings();
+                        EditorPrefs.SetBool("VRC.SDKBase_StripAllShaders", false);
+                        
+					VRC_SdkBuilder.shouldBuildUnityPackage = false;
+                        VRC_SdkBuilder.PreBuildBehaviourPackaging();
+                        VRC_SdkBuilder.ExportSceneToV3();
+                    }
+                    else
+                    {
+                        VRCSdkControlPanel.ShowContentPublishPermissionsDialog();
+                    }
+                }
+            }
+            
+            V3SdkUI.DrawV3UI(() => _builder.NoGuiErrorsOrIssues(), OnV3Export, VRCSdkControlPanel.boxGuiStyle, VRCSdkControlPanel.infoGuiStyle, VRCSdkControlPanel.SdkWindowWidth);
+            
             GUI.enabled = true;
 
             if (Event.current.type == EventType.Used) return;

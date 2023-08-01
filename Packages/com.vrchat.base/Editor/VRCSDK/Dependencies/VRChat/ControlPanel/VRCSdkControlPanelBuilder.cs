@@ -5,6 +5,7 @@ using System.Reflection;
 using UnityEngine;
 using UnityEditor;
 using UnityEditor.SceneManagement;
+using VRC.Core;
 using VRC.SDKBase.Validation.Performance;
 using Object = UnityEngine.Object;
 using VRC.SDKBase.Editor;
@@ -226,14 +227,17 @@ public partial class VRCSdkControlPanel : EditorWindow
             string sdkUnityVersion = VRC.Core.ConfigManager.RemoteConfig.GetString("sdkUnityVersion");
             if (Application.unityVersion != sdkUnityVersion)
             {
-                OnGUIWarning(null, "You are not using the recommended Unity version for the VRChat SDK. Content built with this version may not work correctly. Please use Unity " + sdkUnityVersion,
+                OnGUIWarning(null,
+                    "You are not using the recommended Unity version for the VRChat SDK. Content built with this version may not work correctly. Please use Unity " +
+                    sdkUnityVersion,
                     null,
                     () => { Application.OpenURL("https://unity3d.com/get-unity/download/archive"); }
                 );
             }
         }
 
-        if (VRCSdk3Analysis.IsSdkDllActive(VRCSdk3Analysis.SdkVersion.VRCSDK2) && VRCSdk3Analysis.IsSdkDllActive(VRCSdk3Analysis.SdkVersion.VRCSDK3))
+        if (VRCSdk3Analysis.IsSdkDllActive(VRCSdk3Analysis.SdkVersion.VRCSDK2) &&
+            VRCSdk3Analysis.IsSdkDllActive(VRCSdk3Analysis.SdkVersion.VRCSDK3))
         {
             List<Component> sdk2Components = VRCSdk3Analysis.GetSDKInScene(VRCSdk3Analysis.SdkVersion.VRCSDK2);
             List<Component> sdk3Components = VRCSdk3Analysis.GetSDKInScene(VRCSdk3Analysis.SdkVersion.VRCSDK3);
@@ -248,7 +252,7 @@ public partial class VRCSdkControlPanel : EditorWindow
         }
 
         if (EditorUserBuildSettings.activeBuildTarget == BuildTarget.Android &&
-                EditorUserBuildSettings.androidBuildSubtarget != MobileTextureSubtarget.ASTC)
+            EditorUserBuildSettings.androidBuildSubtarget != MobileTextureSubtarget.ASTC)
         {
             OnGUIError(null,
                 "Default texture format on Android should be set to the newer ASTC format to reduce VRAM usage (this could take a while). Texture settings can be overridden on an individual basis.",
@@ -261,17 +265,17 @@ public partial class VRCSdkControlPanel : EditorWindow
             );
         }
 
-        #if !VRC_MOBILE_IOS
-        if (EditorUserBuildSettings.activeBuildTarget == BuildTarget.iOS)
+        if (ApiUserPlatforms.CurrentUserPlatforms != null && !ApiUserPlatforms.CurrentUserPlatforms.SupportsiOS)
         {
-            OnGUIError(null,
-                "iOS is not supported as a build target.",
-                null,
-                null
-            );
+            if (EditorUserBuildSettings.activeBuildTarget == BuildTarget.iOS)
+            {
+                OnGUIError(null,
+                    "iOS is not supported as a build target.",
+                    null,
+                    null
+                );
+            }
         }
-
-        #endif
 
         if (Lightmapping.giWorkflowMode == Lightmapping.GIWorkflowMode.Iterative)
         {
@@ -581,12 +585,13 @@ public partial class VRCSdkControlPanel : EditorWindow
         else
             EditorGUILayout.LabelField("Android Support: NO");
 
-        #if VRC_MOBILE_IOS
+        if (ApiUserPlatforms.CurrentUserPlatforms?.SupportsiOS == true)
+        {
             if (m.supportedPlatforms == VRC.Core.ApiModel.SupportedPlatforms.iOS || m.supportedPlatforms == VRC.Core.ApiModel.SupportedPlatforms.All)
                 EditorGUILayout.LabelField("iOS Support: YES");
             else
                 EditorGUILayout.LabelField("iOS Support: NO");
-        #endif
+        }
     }
 
     public static void DrawBuildTargetSwitcher()
@@ -617,17 +622,18 @@ public partial class VRCSdkControlPanel : EditorWindow
                     }
                 });
 
-            #if VRC_MOBILE_IOS
-            menu.AddItem(new GUIContent("iOS"), EditorUserBuildSettings.activeBuildTarget == BuildTarget.iOS,
-                () =>
-                {
-                    if (EditorUtility.DisplayDialog("Build Target Switcher", "Are you sure you want to switch your build target to iOS? This could take a while.", "Confirm", "Cancel"))
+            if (ApiUserPlatforms.CurrentUserPlatforms?.SupportsiOS == true)
+            {
+                menu.AddItem(new GUIContent("iOS"), EditorUserBuildSettings.activeBuildTarget == BuildTarget.iOS,
+                    () =>
                     {
-                        EditorUserBuildSettings.selectedBuildTargetGroup = BuildTargetGroup.iOS;
-                        EditorUserBuildSettings.SwitchActiveBuildTargetAsync(BuildTargetGroup.iOS, BuildTarget.iOS);
-                    }
-                });
-            #endif
+                        if (EditorUtility.DisplayDialog("Build Target Switcher", "Are you sure you want to switch your build target to iOS? This could take a while.", "Confirm", "Cancel"))
+                        {
+                            EditorUserBuildSettings.selectedBuildTargetGroup = BuildTargetGroup.iOS;
+                            EditorUserBuildSettings.SwitchActiveBuildTargetAsync(BuildTargetGroup.iOS, BuildTarget.iOS);
+                        }
+                    });
+            }
 
             menu.ShowAsContext();
         }
@@ -640,10 +646,11 @@ public partial class VRCSdkControlPanel : EditorWindow
             buildButtonString = "Build & Publish for Windows";
         if (EditorUserBuildSettings.activeBuildTarget == BuildTarget.Android)
             buildButtonString = "Build & Publish for Android";
-        #if VRC_MOBILE_IOS
-        if (EditorUserBuildSettings.activeBuildTarget == BuildTarget.iOS)
-            buildButtonString = "Build & Publish for iOS";
-        #endif
+        if (ApiUserPlatforms.CurrentUserPlatforms?.SupportsiOS == true)
+        {
+            if (EditorUserBuildSettings.activeBuildTarget == BuildTarget.iOS)
+                buildButtonString = "Build & Publish for iOS";
+        }
 
         return buildButtonString;
     }

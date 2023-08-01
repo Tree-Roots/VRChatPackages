@@ -92,8 +92,14 @@ public partial class VRCSdkControlPanel : EditorWindow
         if (isInitialized)
             return;
 
-        if (!APIUser.IsLoggedIn && ApiCredentials.Load())
-            APIUser.InitialFetchCurrentUser((c) => AnalyticsSDK.LoggedInUserChanged(c.Model as APIUser), null);
+        if (!APIUser.IsLoggedIn && ApiCredentials.Load()) {
+            APIUser.InitialFetchCurrentUser((c) =>
+            {
+                var apiUser = c.Model as APIUser;
+                AnalyticsSDK.LoggedInUserChanged(apiUser);
+                ApiUserPlatforms.Fetch(apiUser.id, null, null);
+            }, null);
+        }
 
         clientInstallPath = SDKClientUtilities.GetSavedVRCInstallPath();
         if (string.IsNullOrEmpty(clientInstallPath))
@@ -527,6 +533,9 @@ public partial class VRCSdkControlPanel : EditorWindow
                         VRCSdkControlPanel.ShowContentPublishPermissionsDialog();
                     }
                 }
+
+                // Fetch platforms that the user can publish to
+                ApiUserPlatforms.Fetch(user.id, null, null);
             },
             delegate (ApiModelContainer<APIUser> c)
             {

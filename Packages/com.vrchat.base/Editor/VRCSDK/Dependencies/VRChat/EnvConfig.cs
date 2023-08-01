@@ -229,8 +229,6 @@ namespace VRC.Editor
                 VRC.Core.ConfigManager.RemoteConfig.Init();
             }
 
-            ConfigureAssets();
-
             LoadEditorResources();
 
             return true;
@@ -399,7 +397,7 @@ namespace VRC.Editor
             #endif
         }
 
-        private static void EnableBatching(bool enable)
+        internal static void EnableBatching(bool enable)
         {
             PlayerSettings[] playerSettings = Resources.FindObjectsOfTypeAll<PlayerSettings>();
             if(playerSettings == null)
@@ -537,7 +535,7 @@ namespace VRC.Editor
             }
         }
 
-        private static void SetQualitySettings()
+        internal static void SetQualitySettings()
         {
             VRC.Core.Logger.Log("Setting Graphics Settings", VRC.Core.DebugLevel.All);
             const string qualitySettingsAssetPath = "ProjectSettings/QualitySettings.asset";
@@ -704,7 +702,7 @@ namespace VRC.Editor
             AssetDatabase.SaveAssets();
         }
 
-        private static void SetGraphicsSettings()
+        internal static void SetGraphicsSettings()
         {
             VRC.Core.Logger.Log("Setting Graphics Settings", VRC.Core.DebugLevel.All);
 
@@ -1035,7 +1033,7 @@ namespace VRC.Editor
             graphicsManager.ApplyModifiedProperties();
         }
 
-        private static void SetAudioSettings()
+        internal static void SetAudioSettings()
         {
             Object audioManager = AssetDatabase.LoadMainAssetAtPath("ProjectSettings/AudioManager.asset");
             SerializedObject audioManagerSerializedObject = new SerializedObject(audioManager);
@@ -1175,7 +1173,7 @@ namespace VRC.Editor
                         PlayerSettings.Android.targetSdkVersion = (AndroidSdkVersions)31;
                         PlayerSettings.Android.minSdkVersion = AndroidSdkVersions.AndroidApiLevel29;
                     #else
-                        PlayerSettings.Android.targetSdkVersion = AndroidSdkVersions.AndroidApiLevel29;
+                        PlayerSettings.Android.targetSdkVersion = (AndroidSdkVersions)32;
                         PlayerSettings.Android.minSdkVersion = AndroidSdkVersions.AndroidApiLevel25;
                     #endif
                 #else
@@ -1274,13 +1272,6 @@ namespace VRC.Editor
             EditorUserBuildSettings.SwitchActiveBuildTarget(target);
             #pragma warning restore CS0618 // Type or member is obsolete
         }
-            #endif
-        }
-
-        public static void ConfigureAssets(bool forStandaloneBuild = false)
-        {
-            #if VRC_CLIENT
-            VRC.UI.Client.Editor.VRCUIManagerEditorHelpers.ConfigureNewUIAssets(forStandaloneBuild);
             #endif
         }
 

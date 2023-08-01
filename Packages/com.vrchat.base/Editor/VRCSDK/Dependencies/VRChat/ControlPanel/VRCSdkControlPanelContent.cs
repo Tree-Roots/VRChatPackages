@@ -27,7 +27,14 @@ public partial class VRCSdkControlPanel : EditorWindow
     private static bool AvatarsToggle = true;
     private static bool TestAvatarsToggle = true;
 
+    const string WORLDS_WEB_URL = "https://vrchat.com/home/content/worlds";
+    const string WORLD_WEB_URL = "https://vrchat.com/home/content/worlds/";
+    const string WORLD_WEB_URL_SUFFIX = "/edit";
+    const string AVATARS_WEB_URL = "https://vrchat.com/home/avatars";
+    const string AVATAR_WEB_URL = "https://vrchat.com/home/avatar/";
+
     const int SCROLLBAR_RESERVED_REGION_WIDTH = 50;
+    const int OPEN_ON_WEB_BUTTON_WIDTH = 100;
 
     const int WORLD_DESCRIPTION_FIELD_WIDTH = 140;
     const int WORLD_IMAGE_BUTTON_WIDTH = 100;
@@ -35,7 +42,7 @@ public partial class VRCSdkControlPanel : EditorWindow
     const int WORLD_RELEASE_STATUS_FIELD_WIDTH = 150;
     const int COPY_WORLD_ID_BUTTON_WIDTH = 75;
     const int DELETE_WORLD_BUTTON_WIDTH = 75;
-    const int WORLD_ALL_INFORMATION_MAX_WIDTH = WORLD_DESCRIPTION_FIELD_WIDTH + WORLD_IMAGE_BUTTON_WIDTH + WORLD_RELEASE_STATUS_FIELD_WIDTH + COPY_WORLD_ID_BUTTON_WIDTH + DELETE_WORLD_BUTTON_WIDTH + SCROLLBAR_RESERVED_REGION_WIDTH;
+    const int WORLD_ALL_INFORMATION_MAX_WIDTH = WORLD_DESCRIPTION_FIELD_WIDTH + WORLD_IMAGE_BUTTON_WIDTH + WORLD_RELEASE_STATUS_FIELD_WIDTH + COPY_WORLD_ID_BUTTON_WIDTH + DELETE_WORLD_BUTTON_WIDTH + OPEN_ON_WEB_BUTTON_WIDTH + SCROLLBAR_RESERVED_REGION_WIDTH;
     const int WORLD_REDUCED_INFORMATION_MAX_WIDTH = WORLD_DESCRIPTION_FIELD_WIDTH + WORLD_IMAGE_BUTTON_WIDTH + WORLD_RELEASE_STATUS_FIELD_WIDTH + SCROLLBAR_RESERVED_REGION_WIDTH;
 
     const int AVATAR_DESCRIPTION_FIELD_WIDTH = 140;
@@ -45,7 +52,7 @@ public partial class VRCSdkControlPanel : EditorWindow
     const int SET_AVATAR_STATUS_BUTTON_WIDTH = 100;
     const int COPY_AVATAR_ID_BUTTON_WIDTH = COPY_WORLD_ID_BUTTON_WIDTH;
     const int DELETE_AVATAR_BUTTON_WIDTH = DELETE_WORLD_BUTTON_WIDTH;
-    const int AVATAR_ALL_INFORMATION_MAX_WIDTH = AVATAR_DESCRIPTION_FIELD_WIDTH + AVATAR_IMAGE_BUTTON_WIDTH + AVATAR_RELEASE_STATUS_FIELD_WIDTH + SET_AVATAR_STATUS_BUTTON_WIDTH + COPY_AVATAR_ID_BUTTON_WIDTH + DELETE_AVATAR_BUTTON_WIDTH + SCROLLBAR_RESERVED_REGION_WIDTH;
+    const int AVATAR_ALL_INFORMATION_MAX_WIDTH = AVATAR_DESCRIPTION_FIELD_WIDTH + AVATAR_IMAGE_BUTTON_WIDTH + AVATAR_RELEASE_STATUS_FIELD_WIDTH + SET_AVATAR_STATUS_BUTTON_WIDTH + COPY_AVATAR_ID_BUTTON_WIDTH + DELETE_AVATAR_BUTTON_WIDTH + OPEN_ON_WEB_BUTTON_WIDTH + SCROLLBAR_RESERVED_REGION_WIDTH;
     const int AVATAR_REDUCED_INFORMATION_MAX_WIDTH = AVATAR_DESCRIPTION_FIELD_WIDTH + AVATAR_IMAGE_BUTTON_WIDTH + AVATAR_RELEASE_STATUS_FIELD_WIDTH + SCROLLBAR_RESERVED_REGION_WIDTH;
 
     const int MAX_ALL_INFORMATION_WIDTH = WORLD_ALL_INFORMATION_MAX_WIDTH > AVATAR_ALL_INFORMATION_MAX_WIDTH ? WORLD_ALL_INFORMATION_MAX_WIDTH : AVATAR_ALL_INFORMATION_MAX_WIDTH;
@@ -113,7 +120,7 @@ public partial class VRCSdkControlPanel : EditorWindow
             ApiAvatar.SortHeading.None,
             ApiAvatar.SortOrder.Descending,
             null,
-            null, 
+            null,
             true,
             false,
             null,
@@ -128,9 +135,9 @@ public partial class VRCSdkControlPanel : EditorWindow
         string[] sdkavatars = Directory.GetFiles(sdkAvatarFolder);
         string filename = "";
         List<ApiAvatar> avatars = new List<ApiAvatar>();
-        foreach(string sdkap in sdkavatars)
+        foreach (string sdkap in sdkavatars)
         {
-            if(Path.GetExtension(sdkap) != ".vrca")
+            if (Path.GetExtension(sdkap) != ".vrca")
                 continue;
 
             filename = Path.GetFileNameWithoutExtension(sdkap);
@@ -187,7 +194,7 @@ public partial class VRCSdkControlPanel : EditorWindow
             "",
             ApiWorld.ReleaseStatus.All,
             null,
-            null, 
+            null,
             true,
             false);
     }
@@ -208,11 +215,11 @@ public partial class VRCSdkControlPanel : EditorWindow
 
     static void SetupAvatarData(List<ApiAvatar> avatars)
     {
-        if (avatars == null || uploadedAvatars == null )
+        if (avatars == null || uploadedAvatars == null)
             return;
 
         avatars.RemoveAll(a => a == null || uploadedAvatars.Any(a2 => a2.id == a.id));
-        foreach(var avatar in avatars)
+        foreach (var avatar in avatars)
         {
             if (string.IsNullOrEmpty(avatar.name))
                 avatar.name = "(unnamed)";
@@ -228,26 +235,18 @@ public partial class VRCSdkControlPanel : EditorWindow
     private static void DownloadImage(string id, string url)
     {
         if (string.IsNullOrEmpty(url))
-        {
             return;
-        }
 
         if (ImageCache.ContainsKey(id) && ImageCache[id] != null)
-        {
             return;
-        }
-        
+
         EditorCoroutine.Start(VRCCachedWebRequest.Get(url, OnDone));
         void OnDone(Texture2D texture)
         {
             if (texture != null)
-            {
                 ImageCache[id] = texture;
-            }
             else if (ImageCache.ContainsKey(id))
-            {
                 ImageCache.Remove(id);
-            }
         }
     }
 
@@ -262,7 +261,6 @@ public partial class VRCSdkControlPanel : EditorWindow
 
         if (APIUser.IsLoggedIn && uploadedWorlds != null && uploadedAvatars != null && testAvatars != null)
         {
-
             bool expandedLayout = false; // (position.width > MAX_ALL_INFORMATION_WIDTH);    // uncomment for future wide layouts
 
             if (!expandedLayout)
@@ -315,12 +313,11 @@ public partial class VRCSdkControlPanel : EditorWindow
                 EditorGUILayout.LabelField("WORLDS", EditorStyles.boldLabel, GUILayout.ExpandWidth(false), GUILayout.Width(58));
                 WorldsToggle = EditorGUILayout.Foldout(WorldsToggle, new GUIContent(""));
                 EditorGUILayout.EndHorizontal();
-                
+
                 EditorGUILayout.Space();
 
                 if (WorldsToggle)
                 {
-
                     List<ApiWorld> tmpWorlds = new List<ApiWorld>();
 
                     if (uploadedWorlds.Count > 0)
@@ -335,28 +332,21 @@ public partial class VRCSdkControlPanel : EditorWindow
                         }
 
                         if (!w.name.ToLowerInvariant().Contains(searchString.ToLowerInvariant()))
-                        {
                             continue;
-                        }
 
                         EditorGUILayout.BeginHorizontal(EditorStyles.helpBox);
-                        EditorGUILayout.BeginHorizontal(GUILayout.Width(WORLD_IMAGE_BUTTON_WIDTH));
 
                         if (ImageCache.ContainsKey(w.id))
                         {
                             if (GUILayout.Button(ImageCache[w.id], GUILayout.Height(WORLD_IMAGE_BUTTON_HEIGHT),
                                 GUILayout.Width(WORLD_IMAGE_BUTTON_WIDTH)))
-                            {
                                 Application.OpenURL(w.imageUrl);
-                            }
                         }
                         else
                         {
                             if (GUILayout.Button("", GUILayout.Height(WORLD_IMAGE_BUTTON_HEIGHT),
                                 GUILayout.Width(WORLD_IMAGE_BUTTON_WIDTH)))
-                            {
                                 Application.OpenURL(w.imageUrl);
-                            }
                         }
 
                         if (expandedLayout)
@@ -369,7 +359,12 @@ public partial class VRCSdkControlPanel : EditorWindow
                         else
                         {
                             EditorGUILayout.BeginVertical();
+
+                            EditorGUILayout.BeginHorizontal();
                             EditorGUILayout.LabelField(w.name, descriptionStyle);
+                            if (GUILayout.Button("Open on web", GUILayout.Width(OPEN_ON_WEB_BUTTON_WIDTH)))
+                                Application.OpenURL(WORLD_WEB_URL + w.id + WORLD_WEB_URL_SUFFIX);
+                            EditorGUILayout.EndHorizontal();
                         }
 
                         EditorGUILayout.LabelField("Release Status: " + w.releaseStatus,
@@ -394,7 +389,7 @@ public partial class VRCSdkControlPanel : EditorWindow
                                     pm.blueprintId = "";
                                     pm.completedSDKPipeline = false;
 
-                                    UnityEditor.EditorUtility.SetDirty(pm);
+                                    EditorUtility.SetDirty(pm);
                                     UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(pm.gameObject.scene);
                                     UnityEditor.SceneManagement.EditorSceneManager.SaveScene(pm.gameObject.scene);
                                 }
@@ -415,7 +410,6 @@ public partial class VRCSdkControlPanel : EditorWindow
                         else
                             EditorGUILayout.EndVertical();
                         EditorGUILayout.EndHorizontal();
-                        EditorGUILayout.EndHorizontal();
                         EditorGUILayout.Space();
                     }
                 }
@@ -424,17 +418,16 @@ public partial class VRCSdkControlPanel : EditorWindow
             if (uploadedAvatars.Count > 0)
             {
                 EditorGUILayout.Space();
-                
+
                 EditorGUILayout.BeginHorizontal();
                 EditorGUILayout.LabelField("AVATARS", EditorStyles.boldLabel, GUILayout.ExpandWidth(false), GUILayout.Width(65));
                 AvatarsToggle = EditorGUILayout.Foldout(AvatarsToggle, new GUIContent(""));
                 EditorGUILayout.EndHorizontal();
-                
+
                 EditorGUILayout.Space();
 
                 if (AvatarsToggle)
                 {
-
                     List<ApiAvatar> tmpAvatars = new List<ApiAvatar>();
 
                     if (uploadedAvatars.Count > 0)
@@ -457,29 +450,23 @@ public partial class VRCSdkControlPanel : EditorWindow
                             uploadedAvatars.Remove(a);
                             continue;
                         }
-                        
+
                         if (!a.name.ToLowerInvariant().Contains(searchString.ToLowerInvariant()))
-                        {
                             continue;
-                        }
 
                         EditorGUILayout.BeginHorizontal(EditorStyles.helpBox);
-                        EditorGUILayout.BeginHorizontal(GUILayout.Width(AVATAR_DESCRIPTION_FIELD_WIDTH));
+
                         if (ImageCache.ContainsKey(a.id))
                         {
                             if (GUILayout.Button(ImageCache[a.id], GUILayout.Height(AVATAR_IMAGE_BUTTON_HEIGHT),
                                 GUILayout.Width(AVATAR_IMAGE_BUTTON_WIDTH)))
-                            {
                                 Application.OpenURL(a.imageUrl);
-                            }
                         }
                         else
                         {
                             if (GUILayout.Button("", GUILayout.Height(AVATAR_IMAGE_BUTTON_HEIGHT),
                                 GUILayout.Width(AVATAR_IMAGE_BUTTON_WIDTH)))
-                            {
                                 Application.OpenURL(a.imageUrl);
-                            }
                         }
 
                         if (expandedLayout)
@@ -487,10 +474,12 @@ public partial class VRCSdkControlPanel : EditorWindow
                         else
                             EditorGUILayout.BeginVertical();
 
-                        EditorGUILayout.LabelField(a.name, descriptionStyle,
-                            GUILayout.Width(expandedLayout
-                                ? position.width - MAX_ALL_INFORMATION_WIDTH + AVATAR_DESCRIPTION_FIELD_WIDTH
-                                : AVATAR_DESCRIPTION_FIELD_WIDTH));
+                        EditorGUILayout.BeginHorizontal();
+                        EditorGUILayout.LabelField(a.name, descriptionStyle);
+                        if (GUILayout.Button("Open on web", GUILayout.Width(OPEN_ON_WEB_BUTTON_WIDTH)))
+                            Application.OpenURL(AVATAR_WEB_URL + a.id);
+                        EditorGUILayout.EndHorizontal();
+
                         EditorGUILayout.LabelField("Release Status: " + a.releaseStatus,
                             GUILayout.Width(AVATAR_RELEASE_STATUS_FIELD_WIDTH));
 
@@ -501,13 +490,13 @@ public partial class VRCSdkControlPanel : EditorWindow
                             a.releaseStatus = oppositeReleaseStatus;
 
                             a.SaveReleaseStatus((c) =>
-                                {
-                                    ApiAvatar savedBP = (ApiAvatar) c.Model;
+                            {
+                                ApiAvatar savedBP = (ApiAvatar)c.Model;
 
-                                    if (justUpdatedAvatars == null) justUpdatedAvatars = new List<ApiAvatar>();
-                                    justUpdatedAvatars.Add(savedBP);
+                                if (justUpdatedAvatars == null) justUpdatedAvatars = new List<ApiAvatar>();
+                                justUpdatedAvatars.Add(savedBP);
 
-                                },
+                            },
                                 (c) =>
                                 {
                                     Debug.LogError(c.Error);
@@ -536,7 +525,7 @@ public partial class VRCSdkControlPanel : EditorWindow
                                     pm.blueprintId = "";
                                     pm.completedSDKPipeline = false;
 
-                                    UnityEditor.EditorUtility.SetDirty(pm);
+                                    EditorUtility.SetDirty(pm);
                                     UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(pm.gameObject.scene);
                                     UnityEditor.SceneManagement.EditorSceneManager.SaveScene(pm.gameObject.scene);
                                 }
@@ -556,7 +545,6 @@ public partial class VRCSdkControlPanel : EditorWindow
                             EditorGUILayout.EndHorizontal();
                         else
                             EditorGUILayout.EndVertical();
-                        EditorGUILayout.EndHorizontal();
                         EditorGUILayout.EndHorizontal();
                         EditorGUILayout.Space();
                     }
@@ -584,9 +572,7 @@ public partial class VRCSdkControlPanel : EditorWindow
                     foreach (ApiAvatar a in tmpAvatars)
                     {
                         if (!a.name.ToLowerInvariant().Contains(searchString.ToLowerInvariant()))
-                        {
                             continue;
-                        }
 
                         EditorGUILayout.BeginHorizontal(EditorStyles.helpBox);
 
@@ -630,7 +616,7 @@ public partial class VRCSdkControlPanel : EditorWindow
                 GUILayout.FlexibleSpace();
                 GUILayout.EndHorizontal();
             }
-            if ((updatedContent) && (null != window)) window.Reset();
+            if (updatedContent && (null != window)) window.Reset();
 
             return true;
         }
@@ -642,9 +628,27 @@ public partial class VRCSdkControlPanel : EditorWindow
 
     void ShowContent()
     {
+        GUIStyle centeredDescriptionStyle = new GUIStyle(EditorStyles.wordWrappedLabel);
+        centeredDescriptionStyle.wordWrap = true;
+        centeredDescriptionStyle.alignment = TextAnchor.MiddleCenter;
+
         GUILayout.BeginHorizontal();
         GUILayout.FlexibleSpace();
         GUILayout.BeginVertical();
+
+        GUILayout.BeginVertical(infoGuiStyle, GUILayout.Width(SdkWindowWidth));
+        EditorGUILayout.LabelField("We recommend that you use the VRChat website to manage your content.", centeredDescriptionStyle);
+        EditorGUILayout.Space();
+        GUILayout.BeginHorizontal();
+        GUILayout.FlexibleSpace();
+        if (GUILayout.Button("Worlds", GUILayout.Width(OPEN_ON_WEB_BUTTON_WIDTH)))
+            Application.OpenURL(WORLDS_WEB_URL);
+        GUILayout.FlexibleSpace();
+        if (GUILayout.Button("Avatars", GUILayout.Width(OPEN_ON_WEB_BUTTON_WIDTH)))
+            Application.OpenURL(AVATARS_WEB_URL);
+        GUILayout.FlexibleSpace();
+        GUILayout.EndHorizontal();
+        GUILayout.EndVertical();
 
         if (uploadedWorlds == null || uploadedAvatars == null || testAvatars == null)
         {
@@ -658,7 +662,7 @@ public partial class VRCSdkControlPanel : EditorWindow
             EditorCoroutine.Start(FetchUploadedData());
         }
 
-        if( fetchingWorlds != null || fetchingAvatars != null )
+        if (fetchingWorlds != null || fetchingAvatars != null)
         {
             GUILayout.BeginVertical(boxGuiStyle, GUILayout.Width(SdkWindowWidth));
             EditorGUILayout.Space();
@@ -672,10 +676,8 @@ public partial class VRCSdkControlPanel : EditorWindow
             EditorGUILayout.Space();
             EditorGUILayout.BeginHorizontal();
             GUILayout.Label("Fetch updated records from the VRChat server");
-            if( GUILayout.Button("Fetch") )
-            {
+            if (GUILayout.Button("Fetch"))
                 ClearContent();
-            }
             EditorGUILayout.EndHorizontal();
             EditorGUILayout.Space();
             GUILayout.EndVertical();
