@@ -359,7 +359,9 @@ public partial class VRCSdkControlPanel : EditorWindow
             selectedBuilder.ShowBuilder();
         }
 
-        if (Event.current.type == EventType.Used) return;
+        if (Event.current.type == EventType.Used)
+            return;
+        
         GUILayout.EndVertical();
         GUILayout.FlexibleSpace();
         GUILayout.EndHorizontal();

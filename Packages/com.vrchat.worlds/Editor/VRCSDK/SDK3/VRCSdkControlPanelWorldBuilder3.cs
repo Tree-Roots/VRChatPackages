@@ -89,7 +89,7 @@ namespace VRC.SDK3.Editor
 
         public override void OnGUIScene()
         {
-                 GUILayout.Label("", VRCSdkControlPanel.scrollViewSeparatorStyle);
+            GUILayout.Label("", VRCSdkControlPanel.scrollViewSeparatorStyle);
 
             _builderScrollPos = GUILayout.BeginScrollView(_builderScrollPos, false, false, GUIStyle.none,
                 GUI.skin.verticalScrollbar, GUILayout.Width(VRCSdkControlPanel.SdkWindowWidth),
@@ -192,14 +192,14 @@ namespace VRC.SDK3.Editor
             EditorGUI.EndDisabledGroup();
 #endif
 
+            if (Event.current.type == EventType.Used)
+                return;
+            
             GUILayout.EndVertical();
 
-            if (Event.current.type != EventType.Used)
-            {
-                GUILayout.EndHorizontal();
-                EditorGUILayout.Space();
-                GUILayout.EndVertical();
-            }
+            GUILayout.EndHorizontal();
+            EditorGUILayout.Space();
+            GUILayout.EndVertical();
 
             EditorGUILayout.Space();
 
@@ -260,6 +260,9 @@ namespace VRC.SDK3.Editor
             }
 
             GUILayout.EndVertical();
+            GUILayout.EndHorizontal();
+            EditorGUILayout.Space();
+            GUILayout.EndVertical();
             GUI.enabled = true;
 
             void OnV3Export()
@@ -284,12 +287,7 @@ namespace VRC.SDK3.Editor
             }
             
             V3SdkUI.DrawV3UI(() => _builder.NoGuiErrorsOrIssues(), OnV3Export, VRCSdkControlPanel.boxGuiStyle, VRCSdkControlPanel.infoGuiStyle, VRCSdkControlPanel.SdkWindowWidth);
-            
-            GUI.enabled = true;
 
-            if (Event.current.type == EventType.Used) return;
-            GUILayout.EndHorizontal();
-            GUILayout.EndVertical();
             GUILayout.EndScrollView();
         }
 

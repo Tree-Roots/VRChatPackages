@@ -8,24 +8,24 @@
 
 | 名称                         | 版本   | 克隆 URL                                                                                           |
 | ---------------------------- | ------ | -------------------------------------------------------------------------------------------------- |
-| VRChat SDK - Base            | 3.2.2  | https://github.com/Tree-Roots/VRChatPackages.git?path=/Packages/com.vrchat.base#3.2.2              |
-| VRChat SDK - Worlds          | 3.2.2  | https://github.com/Tree-Roots/VRChatPackages.git?path=/Packages/com.vrchat.worlds#3.2.2            |
-| VRChat SDK - Avatars         | 3.2.2  | https://github.com/Tree-Roots/VRChatPackages.git?path=/Packages/com.vrchat.avatars#3.2.2           |
+| VRChat SDK - Base            | 3.2.3  | https://github.com/Tree-Roots/VRChatPackages.git?path=/Packages/com.vrchat.base#3.2.3              |
+| VRChat SDK - Worlds          | 3.2.3  | https://github.com/Tree-Roots/VRChatPackages.git?path=/Packages/com.vrchat.worlds#3.2.3            |
+| VRChat SDK - Avatars         | 3.2.3  | https://github.com/Tree-Roots/VRChatPackages.git?path=/Packages/com.vrchat.avatars#3.2.3           |
 | VRChat Package Resolver Tool | moved | move to https://github.com/Tree-Roots/VPRTPackage |
 
 #### 安装 Worlds SDK
 
 1. 打开 Package Manager
 2. 点击“+”号，再点击“Add package from git URL...”
-3. 输入“`https://github.com/Tree-Roots/VRChatPackages.git?path=/Packages/com.vrchat.base#3.2.2`”并回车。
-4. 导入后再次添加，输入“`https://github.com/Tree-Roots/VRChatPackages.git?path=/Packages/com.vrchat.worlds#3.2.2`”并回车。
+3. 输入“`https://github.com/Tree-Roots/VRChatPackages.git?path=/Packages/com.vrchat.base#3.2.3`”并回车。
+4. 导入后再次添加，输入“`https://github.com/Tree-Roots/VRChatPackages.git?path=/Packages/com.vrchat.worlds#3.2.3`”并回车。
 
 #### 安装 Avatar SDK
 
 1. 打开 Package Manager
 2. 点击“+”号，再点击“Add package from git URL...”
-3. 输入“`https://github.com/Tree-Roots/VRChatPackages.git?path=/Packages/com.vrchat.base#3.2.2`”并回车。
-4. 导入后再次添加，输入“`https://github.com/Tree-Roots/VRChatPackages.git?path=/Packages/com.vrchat.avatars#3.2.2`”并回车。
+3. 输入“`https://github.com/Tree-Roots/VRChatPackages.git?path=/Packages/com.vrchat.base#3.2.3`”并回车。
+4. 导入后再次添加，输入“`https://github.com/Tree-Roots/VRChatPackages.git?path=/Packages/com.vrchat.avatars#3.2.3`”并回车。
 
 #### 特点
 
