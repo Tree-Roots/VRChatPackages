@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEditor;
 using VRC.SDK3.Avatars.Components;
 using VRC.SDK3.Editor;
+using VRC.SDK3A.Editor;
 using VRC.SDKBase.Editor;
 
 [CustomEditor(typeof(VRCAvatarDescriptor))]
@@ -60,6 +61,7 @@ public partial class AvatarDescriptorEditor3 : Editor
 
     public override void OnInspectorGUI()
     {
+        _repaint = false;
         serializedObject.Update();
 
         if(VRCSdkControlPanel.window != null)

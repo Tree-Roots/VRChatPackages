@@ -691,7 +691,7 @@ namespace VRC.Editor
                 return;
             }
 
-            int defaultQuality = !Application.isMobilePlatform ? 3 : 4;
+            int defaultQuality = !Application.isMobilePlatform ? 2 : 3;
             #if !VRC_CLIENT
         Debug.Log($"A quality setting was changed resetting to the default quality: {_graphicsPresets[defaultQuality]["name"]}.");
             #endif

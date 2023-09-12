@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEditor;
 using UnityEditor.Animations;
 using System.Collections.Generic;
+using JetBrains.Annotations;
 using VRC.SDK3.Avatars.Components;
 
 public partial class AvatarDescriptorEditor3 : Editor
@@ -103,7 +104,8 @@ public partial class AvatarDescriptorEditor3 : Editor
         serializedObject.ApplyModifiedProperties();
     }
 
-    void SetLayerMaskFromController(SerializedProperty layer)
+    [UsedImplicitly]
+    internal static void SetLayerMaskFromController(SerializedProperty layer)
     {
 // VRC DaveT: avoid exception when observing during runtime
 #if !VRC_CLIENT

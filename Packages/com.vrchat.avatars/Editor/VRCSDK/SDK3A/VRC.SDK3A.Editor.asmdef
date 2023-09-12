@@ -4,7 +4,8 @@
         "VRC.SDK3A",
         "VRC.SDKBase.Editor",
         "VRC.SDKBase",
-        "VRC.Enums.Validation.Performance"
+        "VRC.Enums.Validation.Performance",
+        "UniTask"
     ],
     "includePlatforms": [
         "Editor"

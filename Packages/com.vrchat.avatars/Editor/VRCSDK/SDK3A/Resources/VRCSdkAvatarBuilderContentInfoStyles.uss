@@ -1,0 +1,7 @@
+﻿#fallback-avatar-info Button {
+    margin: 0;
+}
+
+#visibility-block PopupField {
+    flex-grow: 1;
+}

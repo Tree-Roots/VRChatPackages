@@ -228,7 +228,8 @@ namespace VRC.Udon.ProgramSources
             serializedProgramBytesString = null;
             _serializationCache = null;
             programUnityEngineObjects = null;
-            _heapCopyDeserializationContextThreadLocal.Dispose();
+            _heapCopyDeserializationContextThreadLocal?.Value?.Reset();
+            _heapCopyDeserializationContextThreadLocal?.Dispose();
         }
     }
 }
