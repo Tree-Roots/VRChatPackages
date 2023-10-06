@@ -8,24 +8,24 @@
 
 | 名称                         | 版本   | 克隆 URL                                                                                           |
 | ---------------------------- | ------ | -------------------------------------------------------------------------------------------------- |
-| VRChat SDK - Base            | 3.3.0  | https://gitee.com/Sonic853/VRChatPackages.git?path=/Packages/com.vrchat.base#3.3.0              |
-| VRChat SDK - Worlds          | 3.3.0  | https://gitee.com/Sonic853/VRChatPackages.git?path=/Packages/com.vrchat.worlds#3.3.0            |
-| VRChat SDK - Avatars         | 3.3.0  | https://gitee.com/Sonic853/VRChatPackages.git?path=/Packages/com.vrchat.avatars#3.3.0           |
+| VRChat SDK - Base            | 3.4.0  | https://gitee.com/Sonic853/VRChatPackages.git?path=/Packages/com.vrchat.base#3.4.0              |
+| VRChat SDK - Worlds          | 3.4.0  | https://gitee.com/Sonic853/VRChatPackages.git?path=/Packages/com.vrchat.worlds#3.4.0            |
+| VRChat SDK - Avatars         | 3.4.0  | https://gitee.com/Sonic853/VRChatPackages.git?path=/Packages/com.vrchat.avatars#3.4.0           |
 | VRChat Package Resolver Tool | moved | move to https://github.com/Tree-Roots/VPRTPackage |
 
 #### 安装 Worlds SDK
 
 1. 打开 Package Manager
 2. 点击“+”号，再点击“Add package from git URL...”
-3. 输入“`https://gitee.com/Sonic853/VRChatPackages.git?path=/Packages/com.vrchat.base#3.3.0`”并回车。
-4. 导入后再次添加，输入“`https://gitee.com/Sonic853/VRChatPackages.git?path=/Packages/com.vrchat.worlds#3.3.0`”并回车。
+3. 输入“`https://gitee.com/Sonic853/VRChatPackages.git?path=/Packages/com.vrchat.base#3.4.0`”并回车。
+4. 导入后再次添加，输入“`https://gitee.com/Sonic853/VRChatPackages.git?path=/Packages/com.vrchat.worlds#3.4.0`”并回车。
 
 #### 安装 Avatar SDK
 
 1. 打开 Package Manager
 2. 点击“+”号，再点击“Add package from git URL...”
-3. 输入“`https://gitee.com/Sonic853/VRChatPackages.git?path=/Packages/com.vrchat.base#3.3.0`”并回车。
-4. 导入后再次添加，输入“`https://gitee.com/Sonic853/VRChatPackages.git?path=/Packages/com.vrchat.avatars#3.3.0`”并回车。
+3. 输入“`https://gitee.com/Sonic853/VRChatPackages.git?path=/Packages/com.vrchat.base#3.4.0`”并回车。
+4. 导入后再次添加，输入“`https://gitee.com/Sonic853/VRChatPackages.git?path=/Packages/com.vrchat.avatars#3.4.0`”并回车。
 
 #### 特点
 

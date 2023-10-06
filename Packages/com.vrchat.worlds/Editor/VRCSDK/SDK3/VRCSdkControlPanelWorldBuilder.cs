@@ -41,6 +41,10 @@ namespace VRC.SDK3.Editor
         private VRCSdkControlPanel _builder;
         private VRC_SceneDescriptor[] _scenes;
 
+#if UNITY_ANDROID || UNITY_IOS
+        private readonly List<GameObject> _rootGameObjectsBuffer = new List<GameObject>();
+#endif
+
         private const string COMMUNITY_LABS_HELP_URL =
             "https://creators.vrchat.com/worlds/submitting-a-world-to-be-made-public/#submitting-to-community-labs";
         private readonly string[] COMMUNITY_LABS_BLOCKED_TAGS = {"admin_approved", "system_labs", "admin_lock_labs", "system_troll"};
@@ -337,8 +341,7 @@ namespace VRC.SDK3.Editor
         {
             CheckUploadChanges(scene);
 
-            List<VRC_EventHandler> sdkBaseEventHandlers =
-                new List<VRC_EventHandler>(Object.FindObjectsOfType<VRC_EventHandler>());
+            List<VRC_EventHandler> sdkBaseEventHandlers = GatherComponentsOfTypeInScene<VRC_EventHandler>();
 
             if (sdkBaseEventHandlers.Count > 0)
             {
@@ -356,6 +359,24 @@ namespace VRC.SDK3.Editor
                             Object.DestroyImmediate(eh);
                         }
                     });
+            }
+
+            // If the user is trying to use native text components and has no TextMeshPro components, inform them that
+            // TMP tends to appear clearer since it uses a signed distance field for rendering text.
+            if (
+                GatherComponentsOfTypeInScene<UnityEngine.UI.Text>().Count > 0 ||
+                GatherComponentsOfTypeInScene<UnityEngine.TextMesh>().Count > 0
+            )
+            {
+                // Search several common TMP types.
+                if (
+                    GatherComponentsOfTypeInScene<TMPro.TMP_Text>().Count == 0 &&
+                    GatherComponentsOfTypeInScene<TMPro.TMP_Dropdown>().Count == 0 &&
+                    GatherComponentsOfTypeInScene<TMPro.TMP_InputField>().Count == 0
+                )
+                {
+                    _builder.OnGUIInformation(scene, "Your world contains one or more Unity text components, but no TextMeshPro components. Consider using TextMeshPro instead, since it's typically clearer and easier to read than native Unity text.");
+                }
             }
 
             Vector3 g = Physics.gravity;
@@ -394,7 +415,7 @@ namespace VRC.SDK3.Editor
                 );
             }
 
-            AudioSource[] audioSources = Object.FindObjectsOfType<AudioSource>();
+            List<AudioSource> audioSources = GatherComponentsOfTypeInScene<AudioSource>();
             foreach (AudioSource a in audioSources)
             {
                 if (a.GetComponent<ONSPAudioSource>() != null)
@@ -449,23 +470,21 @@ namespace VRC.SDK3.Editor
                     null);
             }
 
-            foreach (GameObject go in Object.FindObjectsOfType<GameObject>())
-            {
-                if (go.transform.parent == null)
-                {
-                    // check root game objects
 #if UNITY_ANDROID || UNITY_IOS
-                    // check root game objects for illegal shaders
-                    IEnumerable<Shader> illegalShaders = VRC.SDKBase.Validation.WorldValidation.FindIllegalShaders(go);
-                    foreach (Shader s in illegalShaders)
-                    {
-                        _builder.OnGUIWarning(scene, "World uses unsupported shader '" + s.name + "'. This could cause low performance or future compatibility issues.", null, null);
-                    }
-#endif
+            _rootGameObjectsBuffer.Clear();
+            scene.gameObject.scene.GetRootGameObjects(_rootGameObjectsBuffer);
+            foreach (GameObject go in _rootGameObjectsBuffer)
+            {
+                // check root game objects for illegal shaders
+                IEnumerable<Shader> illegalShaders = VRC.SDKBase.Validation.WorldValidation.FindIllegalShaders(go);
+                foreach (Shader s in illegalShaders)
+                {
+                    _builder.OnGUIWarning(scene, "World uses unsupported shader '" + s.name + "'. This could cause low performance or future compatibility issues.", null, null);
                 }
             }
+#endif
             
-            foreach (VRC.SDK3.Components.VRCObjectSync os in Object.FindObjectsOfType<VRC.SDK3.Components.VRCObjectSync>())
+            foreach (VRC.SDK3.Components.VRCObjectSync os in GatherComponentsOfTypeInScene<VRC.SDK3.Components.VRCObjectSync>())
             {
                 if (os.GetComponents<VRC.Udon.UdonBehaviour>().Any((ub) => ub.SyncIsManual))
                     _builder.OnGUIError(scene, "Object Sync cannot share an object with a manually synchronized Udon Behaviour",
@@ -475,7 +494,26 @@ namespace VRC.SDK3.Editor
                         delegate { Selection.activeObject = os.gameObject; }, null);
             }
         }
-        
+
+        /// <summary>
+        /// Get all components of a given type in loaded scenes, including disabled components.
+        /// </summary>
+        private static List<T> GatherComponentsOfTypeInScene<T>() where T : UnityEngine.Component
+        {
+            T[] candidates = Resources.FindObjectsOfTypeAll<T>();
+            List<T> results = new List<T>(candidates.Length);
+
+            foreach (T candidate in candidates)
+            {
+                if (!EditorUtility.IsPersistent(candidate.transform.root.gameObject) && !(candidate.hideFlags == HideFlags.NotEditable || candidate.hideFlags == HideFlags.HideAndDontSave))
+                {
+                    results.Add(candidate);
+                }
+            }
+
+            return results;
+        }
+
         private static void CheckUploadChanges(VRC_SceneDescriptor scene)
         {
             if (!EditorPrefs.HasKey("VRC.SDKBase_scene_changed") ||
@@ -746,13 +784,14 @@ namespace VRC.SDK3.Editor
         private VisualElement _newWorldBlock;
         private Checklist _creationChecklist;
         private Toggle _worldDebuggingToggle;
-        private ContentTagsField _contentTagsField;
+        private ContentWarningsField _contentWarningsField;
         private VisualElement _v3Block;
         private VisualElement _platformSwitcher;
         private VisualElement _publishBlock;
         private Button _publishButton;
         private Label _visibilityLabel;
         private VisualElement _visibilityFoldout;
+        private Toggle _acceptTermsToggle;
         private Dictionary<string, Foldout> _foldouts = new Dictionary<string, Foldout>();
         
         private PipelineManager[] _pipelineManagers;
@@ -810,6 +849,7 @@ namespace VRC.SDK3.Editor
                 _thumbnailFoldout.SetEnabled(value);
                 _platformSwitcher.SetEnabled(value);
                 _visibilityFoldout.SetEnabled(value);
+                _acceptTermsToggle?.SetEnabled(value);
             }
         }
         
@@ -898,7 +938,7 @@ namespace VRC.SDK3.Editor
             _thumbnailFoldout = root.Q<ThumbnailFoldout>();
             _thumbnail = _thumbnailFoldout.Thumbnail;
             _tagsField = root.Q<TagsField>("content-tags");
-            _contentTagsField = root.Q<ContentTagsField>("content-content-tags");
+            _contentWarningsField = root.Q<ContentWarningsField>("content-warnings");
             var worldDebuggingHelpButton = root.Q<Button>("show-world-debugging-help-button");
             var platformsBlock = root.Q<Label>("content-platform-info");
             _lastUpdatedLabel = root.Q<Label>("last-updated-label");
@@ -1147,9 +1187,10 @@ namespace VRC.SDK3.Editor
             _tagsField.tags = worldTags;
             _tagsField.OnAddTag += HandleAddTag;
             _tagsField.OnRemoveTag += HandleRemoveTag;
-            
-            _contentTagsField.tags = worldTags;
-            _contentTagsField.OnToggleTag += HandleToggleTag;
+
+            _contentWarningsField.originalTags = _originalWorldData.Tags;
+            _contentWarningsField.tags = worldTags;
+            _contentWarningsField.OnToggleTag += HandleToggleTag;
 
             _nameField.RegisterValueChangedCallback(HandleNameChange);
             _descriptionField.RegisterValueChangedCallback(HandleDescriptionChange);
@@ -1173,8 +1214,7 @@ namespace VRC.SDK3.Editor
             _descriptionField.SetValueWithoutNotify(_worldData.Description);
 
             _worldData.Tags = new List<string>(WorldBuilderSessionState.WorldTags.Split(new [] { "|" }, StringSplitOptions.RemoveEmptyEntries));
-            _tagsField.tags = _worldData.Tags;
-            _contentTagsField.tags = _worldData.Tags;
+            _tagsField.tags = _contentWarningsField.tags = _worldData.Tags;
 
             _worldData.Capacity = WorldBuilderSessionState.WorldCapacity;
             _capacityField.SetValueWithoutNotify(_worldData.Capacity);
@@ -1309,50 +1349,52 @@ namespace VRC.SDK3.Editor
 
             ValidateChecklist();
         }
-        
+
         private void HandleAddTag(object sender, string tag)
         {
             if (_worldData.Tags == null)
-            {
                 _worldData.Tags = new List<string>();
-            }
 
             var formattedTag = "author_tag_" + tag.ToLowerInvariant().Replace(' ', '_');
             if (_worldData.Tags.Contains(formattedTag)) return;
             
             _worldData.Tags.Add(formattedTag);
-            _tagsField.tags = _worldData.Tags;
+            _tagsField.tags = _contentWarningsField.tags = _worldData.Tags;
 
             if (IsNewWorld)
                 WorldBuilderSessionState.WorldTags = string.Join("|", _worldData.Tags);
 
             IsContentInfoDirty = CheckDirty();
         }
-        
+
         private void HandleRemoveTag(object sender, string tag)
         {
-            if (_worldData.Tags == null) return;
-            if (!_worldData.Tags.Contains(tag)) return;
-            
+            if (_worldData.Tags == null)
+                _worldData.Tags = new List<string>();
+
+            if (!_worldData.Tags.Contains(tag))
+                return;
+
             _worldData.Tags.Remove(tag);
-            _tagsField.tags = _worldData.Tags;
+            _tagsField.tags = _contentWarningsField.tags = _worldData.Tags;
 
             if (IsNewWorld)
                 WorldBuilderSessionState.WorldTags = string.Join("|", _worldData.Tags);
 
             IsContentInfoDirty = CheckDirty();
         }
-        
+
         private void HandleToggleTag(object sender, string tag)
         {
-            if (_worldData.Tags == null) return;
+            if (_worldData.Tags == null)
+                _worldData.Tags = new List<string>();
 
             if (_worldData.Tags.Contains(tag))
                 _worldData.Tags.Remove(tag);
             else
                 _worldData.Tags.Add(tag);
-            
-            _tagsField.tags = _contentTagsField.tags = _worldData.Tags;
+
+            _tagsField.tags = _contentWarningsField.tags = _worldData.Tags;
 
             if (IsNewWorld)
                 WorldBuilderSessionState.WorldTags = string.Join("|", _worldData.Tags);
@@ -1381,8 +1423,7 @@ namespace VRC.SDK3.Editor
             
             _nameField.value = _worldData.Name;
             _descriptionField.value = _worldData.Description;
-            _tagsField.tags = _worldData.Tags;
-            _contentTagsField.tags = _worldData.Tags;
+            _tagsField.tags = _contentWarningsField.tags = _worldData.Tags;
             _lastUpdatedLabel.text = _worldData.UpdatedAt != DateTime.MinValue ? _worldData.UpdatedAt.ToString() : _worldData.CreatedAt.ToString();
             _versionLabel.text = _worldData.Version.ToString();
             _worldDebuggingToggle.value = _worldData.Tags?.Contains("debug_allowed") ?? false;
@@ -1451,7 +1492,8 @@ namespace VRC.SDK3.Editor
                 _worldData = updatedWorld;
                 _originalWorldData = updatedWorld;
                 await _thumbnail.SetImageUrl(_worldData.ThumbnailImageUrl, _worldUploadCancellationToken);
-                _originalWorldData.Tags = new List<string>(_worldData.Tags ?? new List<string>());
+                _contentWarningsField.originalTags = _originalWorldData.Tags = new List<string>(_worldData.Tags ?? new List<string>());
+                _tagsField.tags = _contentWarningsField.tags = _worldData.Tags ?? new List<string>();
                 _newThumbnailImagePath = null;
             }
             else
@@ -1470,8 +1512,9 @@ namespace VRC.SDK3.Editor
                 
                 _worldData = updatedWorld;
                 _originalWorldData = updatedWorld;
-                _originalWorldData.Tags = new List<string>(_worldData.Tags ?? new List<string>());
-                
+                _contentWarningsField.originalTags = _originalWorldData.Tags = new List<string>(_worldData.Tags ?? new List<string>());
+                _contentWarningsField.tags = _tagsField.tags = new List<string>(_worldData.Tags ?? new List<string>());
+
                 await _builder.ShowBuilderNotification("World Updated", successLabel, "green", 3000);
             }
             
@@ -1604,6 +1647,7 @@ namespace VRC.SDK3.Editor
             _lastBlueprintId = blueprintId;
         }
 
+        private bool _acceptedTerms;
         public virtual void CreateBuildGUI(VisualElement root)
         {
             var tree = Resources.Load<VisualTreeAsset>("VRCSdkWorldBuilderBuildLayout");
@@ -1627,7 +1671,13 @@ namespace VRC.SDK3.Editor
             _buildAndTestButton = root.Q<Button>("build-and-test-button");
             var localTestDisabledBlock = root.Q("local-test-disabled-block");
             var localTestDisabledText = root.Q<Label>("local-test-disabled-text");
+            _acceptTermsToggle = root.Q<Toggle>("accept-terms-toggle");
             _v3Block = root.Q("v3-block");
+            
+            _acceptTermsToggle.RegisterValueChangedCallback(evt =>
+            {
+                _acceptedTerms = evt.newValue;
+            });
 
             var numClientsField = root.Q<IntegerField>("num-clients");
             numClientsField.RegisterValueChangedCallback(evt =>
@@ -1857,6 +1907,17 @@ namespace VRC.SDK3.Editor
                 {
                     localTestDisabledText.text =
                         "You must fix the issues listed above before you can do an Offline Test";
+                }
+                
+                if (!_acceptedTerms)
+                {
+                    uploadDisabledText.text = "You must accept the terms above to upload content to VRChat";
+                    uploadDisabledBlock.RemoveFromClassList("d-none");
+                    return;
+                }
+                else
+                {
+                    uploadDisabledBlock.AddToClassList("d-none");
                 }
                 
                 var lastBuildUrl = VRC_SdkBuilder.GetLastUrl();
@@ -2090,7 +2151,7 @@ namespace VRC.SDK3.Editor
                         (status, percentage) => { OnSdkUploadProgress?.Invoke(this, (status, percentage)); },
                         _worldUploadCancellationToken);
                 }
-
+                
                 _uploadState = SdkUploadState.Success;
                 OnSdkUploadSuccess?.Invoke(this, _worldData.ID);
 
@@ -2098,6 +2159,7 @@ namespace VRC.SDK3.Editor
             }
             catch (TaskCanceledException e)
             {
+                AnalyticsSDK.WorldUploadFailed(pM.blueprintId, !creatingNewWorld);
                 if (cancellationToken.IsCancellationRequested)
                 {
                     Core.Logger.LogError("Request cancelled", DebugLevel.API);
@@ -2106,10 +2168,12 @@ namespace VRC.SDK3.Editor
             }
             catch (ApiErrorException e)
             {
+                AnalyticsSDK.WorldUploadFailed(pM.blueprintId, !creatingNewWorld);
                 throw await HandleUploadError(new UploadException(e.ErrorMessage, e));
             }
             catch (Exception e)
             {
+                AnalyticsSDK.WorldUploadFailed(pM.blueprintId, !creatingNewWorld);
                 throw await HandleUploadError(new UploadException(e.Message, e));
             }
         }

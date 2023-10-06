@@ -205,6 +205,7 @@ namespace VRC.SDKBase.Editor.Elements
             schedule.Execute(() =>
             {
                 if (!Capturing) return;
+                if (!UnityEditorInternal.InternalEditorUtility.isApplicationActive) return;
                 var customCameraValue = (Camera) _customCamera.value;
                 if (customCameraValue != null && _useCustomCamera.value)
                 {

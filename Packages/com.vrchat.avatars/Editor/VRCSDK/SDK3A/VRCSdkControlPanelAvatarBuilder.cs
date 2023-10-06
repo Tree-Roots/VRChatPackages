@@ -922,10 +922,11 @@ namespace VRC.SDK3A.Editor
         private Label _localTestDisabledText;
         private VisualElement _fallbackInfo;
         private Button _updateCancelButton;
-        private ContentTagsField _contentTagsField;
+        private ContentWarningsField _contentWarningsField;
         private VisualElement _v3Block;
         private VisualElement _platformSwitcher;
         private VisualElement _visibilityPopupBlock;
+        private Toggle _acceptTermsToggle;
         private PopupField<string> _visibilityPopup;
         private Dictionary<string, Foldout> _foldouts = new Dictionary<string, Foldout>();
 
@@ -1024,6 +1025,7 @@ namespace VRC.SDK3A.Editor
                 _thumbnailFoldout.SetEnabled(value);
                 _avatarSelector.PopupEnabled = value;
                 _platformSwitcher.SetEnabled(value);
+                _acceptTermsToggle?.SetEnabled(value);
             }
         }
 
@@ -1153,7 +1155,7 @@ namespace VRC.SDK3A.Editor
             _newAvatarBlock = root.Q("new-avatar-block");
             _creationChecklist = root.Q<Checklist>("new-avatar-checklist");
             _fallbackInfo = root.Q<VisualElement>("fallback-avatar-info");
-            _contentTagsField = root.Q<ContentTagsField>("content-content-tags");
+            _contentWarningsField = root.Q<ContentWarningsField>("content-warnings");
 
             _platformSwitcher = _builder.rootVisualElement.Q("platform-switcher");
             _progressBlock = _builder.rootVisualElement.Q("progress-section");
@@ -1250,7 +1252,7 @@ namespace VRC.SDK3A.Editor
             _thumbnailFoldout.OnNewThumbnailSelected -= HandleThumbnailChanged;
             _discardChangesButton.clicked -= HandleDiscardChangesClick;
             _saveChangesButton.clicked -= HandleSaveChangesClick;
-            _contentTagsField.OnToggleTag -= HandleToggleTag;
+            _contentWarningsField.OnToggleTag -= HandleToggleTag;
             root.schedule.Execute(CheckBlueprintChanges).Pause();
 
             // Load the avatar data
@@ -1427,12 +1429,13 @@ namespace VRC.SDK3A.Editor
             UiEnabled = true;
 
             var avatarTags = _avatarData.Tags ?? new List<string>();
-            _contentTagsField.tags = avatarTags;
-            _contentTagsField.OnToggleTag += HandleToggleTag;
-
             _originalAvatarData = _avatarData;
             // lists get passed by reference, so we instantiate a new list to avoid modifying the original
-            _originalAvatarData.Tags = new List<string>(_avatarData.Tags ?? new List<string>());
+            _originalAvatarData.Tags = new List<string>(avatarTags);
+
+            _contentWarningsField.originalTags = _originalAvatarData.Tags;
+            _contentWarningsField.tags = avatarTags;
+            _contentWarningsField.OnToggleTag += HandleToggleTag;
 
             _nameField.RegisterValueChangedCallback(HandleNameChange);
             _descriptionField.RegisterValueChangedCallback(HandleDescriptionChange);
@@ -1456,7 +1459,7 @@ namespace VRC.SDK3A.Editor
             _avatarData.ReleaseStatus = AvatarBuilderSessionState.AvatarReleaseStatus;
             _visibilityPopup.SetValueWithoutNotify(_avatarData.ReleaseStatus);
 
-            _contentTagsField.tags = _avatarData.Tags = new List<string>(AvatarBuilderSessionState.AvatarTags.Split('|'));
+            _contentWarningsField.tags = _avatarData.Tags = new List<string>(AvatarBuilderSessionState.AvatarTags.Split('|'));
             
             _newThumbnailImagePath = AvatarBuilderSessionState.AvatarThumbPath;
             if (!string.IsNullOrWhiteSpace(_newThumbnailImagePath))
@@ -1521,16 +1524,15 @@ namespace VRC.SDK3A.Editor
         
         private void HandleToggleTag(object sender, string tag)
         {
-            if (_avatarData.Tags == null) return;
+            if (_avatarData.Tags == null)
+                _avatarData.Tags = new List<string>();
+
             if (_avatarData.Tags.Contains(tag))
-            {
                 _avatarData.Tags.Remove(tag);
-            }
             else
-            {
                 _avatarData.Tags.Add(tag);
-            }
-            _contentTagsField.tags = _avatarData.Tags;
+
+            _contentWarningsField.tags = _avatarData.Tags;
             if (IsNewAvatar)
                 AvatarBuilderSessionState.AvatarTags = string.Join("|", _avatarData.Tags);
 
@@ -1564,11 +1566,10 @@ namespace VRC.SDK3A.Editor
         private async void HandleDiscardChangesClick()
         {
             _avatarData = _originalAvatarData;
-            _avatarData.Tags = new List<string>(_originalAvatarData.Tags);
+            _contentWarningsField.tags = _avatarData.Tags = new List<string>(_originalAvatarData.Tags);
             _nameField.value = _avatarData.Name;
             _descriptionField.value = _avatarData.Description;
             _visibilityPopup.value = _avatarData.ReleaseStatus;
-            _contentTagsField.tags = _avatarData.Tags;
             _lastUpdatedLabel.text = _avatarData.UpdatedAt != DateTime.MinValue ? _avatarData.UpdatedAt.ToString() : _avatarData.CreatedAt.ToString();
             _versionLabel.text = _avatarData.Version.ToString();
 
@@ -1635,7 +1636,8 @@ namespace VRC.SDK3A.Editor
                 _avatarData = updatedAvatar;
                 _originalAvatarData = updatedAvatar;
                 await _thumbnail.SetImageUrl(_avatarData.ThumbnailImageUrl, _avatarSwitchCancellationToken.Token);
-                _originalAvatarData.Tags = new List<string>(_avatarData.Tags ?? new List<string>());
+                _contentWarningsField.originalTags = _originalAvatarData.Tags = new List<string>(_avatarData.Tags ?? new List<string>());
+                _contentWarningsField.tags = _avatarData.Tags ?? new List<string>();
                 _newThumbnailImagePath = null;
             }
             else
@@ -1651,7 +1653,8 @@ namespace VRC.SDK3A.Editor
                 Core.Logger.Log("Updated avatar");
                 _avatarData = updatedAvatar;
                 _originalAvatarData = updatedAvatar;
-                _originalAvatarData.Tags = new List<string>(_avatarData.Tags ?? new List<string>());
+                _contentWarningsField.originalTags = _originalAvatarData.Tags = new List<string>(_avatarData.Tags ?? new List<string>());
+                _contentWarningsField.tags = _avatarData.Tags ?? new List<string>();
             }
 
             UpdateCancelEnabled = false;
@@ -1704,6 +1707,7 @@ namespace VRC.SDK3A.Editor
             _lastBlueprintId = pm.blueprintId;
         }
 
+        private bool _acceptedTerms;
         public void CreateBuildGUI(VisualElement root)
         {
             var tree = Resources.Load<VisualTreeAsset>("VRCSdkAvatarBuilderBuildLayout");
@@ -1721,7 +1725,13 @@ namespace VRC.SDK3A.Editor
             _buildAndTestButton = root.Q<Button>("build-and-test-button");
             _localTestDisabledBlock = root.Q("local-test-disabled-block");
             _localTestDisabledText = root.Q<Label>("local-test-disabled-text");
+            _acceptTermsToggle = root.Q<Toggle>("accept-terms-toggle");
             _v3Block = root.Q("v3-block");
+
+            _acceptTermsToggle.RegisterValueChangedCallback(evt =>
+            {
+                _acceptedTerms = evt.newValue;
+            });
 
 #if UNITY_ANDROID || UNITY_IOS
             _buildAndTestButton.SetEnabled(false);
@@ -1870,6 +1880,17 @@ namespace VRC.SDK3A.Editor
                 {
                     _localTestDisabledText.text =
                         "You must fix the issues listed above before you can do an Offline Test";
+                }
+
+                if (!_acceptedTerms)
+                {
+                    _uploadDisabledText.text = "You must accept the terms above to upload content to VRChat";
+                    _uploadDisabledBlock.RemoveFromClassList("d-none");
+                    return;
+                }
+                else
+                {
+                    _uploadDisabledBlock.AddToClassList("d-none");
                 }
                 
                 if (IsNewAvatar && (string.IsNullOrWhiteSpace(_avatarData.Name) || string.IsNullOrWhiteSpace(_newThumbnailImagePath)))
@@ -2336,7 +2357,7 @@ namespace VRC.SDK3A.Editor
                         (status, percentage) => { OnSdkUploadProgress?.Invoke(this, (status, percentage)); },
                         _avatarUploadCancellationToken);
                 }
-
+                
                 _uploadState = SdkUploadState.Success;
                 OnSdkUploadSuccess?.Invoke(this, _avatarData.ID);
 
@@ -2344,6 +2365,7 @@ namespace VRC.SDK3A.Editor
             }
             catch (TaskCanceledException e)
             {
+                AnalyticsSDK.AvatarUploadFailed(pM.blueprintId, !creatingNewAvatar);
                 if (cancellationToken.IsCancellationRequested)
                 {
                     Core.Logger.LogError("Request cancelled", DebugLevel.API);
@@ -2352,10 +2374,12 @@ namespace VRC.SDK3A.Editor
             }
             catch (ApiErrorException e)
             {
+                AnalyticsSDK.AvatarUploadFailed(pM.blueprintId, !creatingNewAvatar);
                 throw await HandleUploadError(new UploadException(e.ErrorMessage, e));
             }
             catch (Exception e)
             {
+                AnalyticsSDK.AvatarUploadFailed(pM.blueprintId, !creatingNewAvatar);
                 throw await HandleUploadError(new UploadException(e.Message, e));
             }
         }

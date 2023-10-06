@@ -25,7 +25,7 @@
                     <Label class="white-space-normal" text="Recommended Capacity controls how many users are allowed into one Public or Group Public instance of a world before that instance is no longer visible on the world instance list. Instances above Recommended Capacity are still accessible through other methods, such as joining through a group, or off of a friend. All other instance types are not impacted by the Recommended Capacity." />
                 </VisualElement>
                 <vrc:TagsField label="Tags" class="content-info-field w-100 m-unity-field" name="content-tags" />
-                <vrc:ContentTagsField label="Content Tags" class="content-info-field mb-0 w-100 m-unity-field" name="content-content-tags" />
+                <vrc:ContentWarningsField label="Content Warnings" class="content-info-field mb-0 w-100 m-unity-field" name="content-warnings" />
                 <VisualElement class="d-flex flex-grow-1" />
                 <VisualElement class="row align-items-center m-unity-field">
                     <Label text="World Debugging" class="field-label" />

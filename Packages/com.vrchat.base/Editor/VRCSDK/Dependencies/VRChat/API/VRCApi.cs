@@ -1085,6 +1085,7 @@ namespace VRC.SDKBase.Editor.Api {
             {
                 await MakeRequest<byte[], EmptyResponse>(uploadUrl, HttpMethod.Put, body: fileData, contentType: mimeType,
                     contentMD5: fileContent,
+                    timeout: 60 * 60,
                     onProgress: (percentage) => { onProgress?.Invoke($"Uploading {fileUploadType.ToString()} ({(percentage * 100):F0}%)...", percentage); }, cancellationToken: cancellationToken);
             }
             catch (Exception e)

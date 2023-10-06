@@ -32,6 +32,10 @@
             </VisualElement>
             <Label class="white-space-normal mt-1  ml-1 mr-1 mb-2 d-none" name="online-publishing-help-text" text="In order for other people to see your world in VRChat it must be built and published to our game servers." />
         </VisualElement>
+        <VisualElement class="d-flex row align-items-center pl-1 mt-1 mb-2">
+            <Toggle name="accept-terms-toggle" />
+            <Label text="The information provided above is accurate and I have the rights to upload this content to VRChat" class="ml-2 flex-shrink-1 white-space-normal pr-2"  />
+        </VisualElement>
         <VisualElement class="row flex-shrink-0 mt-2 relative">
             <Button name="upload-last-build-button" class="ml-0 mr-1 pr-4 pl-4 d-flex flex-1" text="Upload Last Build" />
             <Button name="build-and-upload-button" class="mr-0 ml-1 pr-4 pl-4 d-flex flex-1" text="Build and Upload" />
